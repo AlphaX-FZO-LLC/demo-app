@@ -31,7 +31,7 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
   const [identifierType, setIdentifierType] = useState<'phoneNumber' | 'nationalId'>(
     'phoneNumber'
   );
-  const [timeLeft, setTimeLeft] = useState(360) // 2 minutes
+  const [timeLeft, setTimeLeft] = useState(180) // 3 minutes for development (180s)
   const [isValidPhone, setIsValidPhone] = useState(true);
   const [challengeNumber, setChallengeNumber] = useState<number | null>(null);
   const [accessToken, setAccessToken] = useState('');
@@ -59,7 +59,7 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
   }, [timeLeft])
 
   const getProgressPercentage = () => {
-    return ((120 - timeLeft) / 120) * 100
+    return ((180 - timeLeft) / 180) * 100
   }
 
   useEffect(() => {
@@ -136,11 +136,18 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
         switch (data.type) {
           case 'status':
             setAttemptsRemaining(data.attemptsRemaining || null);
+            // Update timeLeft from backend if available
+            if (data.remaining_time !== undefined) {
+              setTimeLeft(data.remaining_time);
+            }
             if (data.status === 'verified') {
               setStatus('success');
-            } else if (data.status === 'failed' || data.status === 'expired') {
+            } else if (data.status === 'failed') {
               setStatus('error');
-              setError('Authentication failed or expired');
+              setError('Session invalidated due to incorrect attempt. Please restart authentication from the beginning.');
+            } else if (data.status === 'expired') {
+              setStatus('error');
+              setError('Session expired. Please restart authentication.');
             }
             break;
 
@@ -182,6 +189,11 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
         const status = await digitalPassAuth.getSessionStatus(accessToken);
         setAttemptsRemaining(status.attemptsRemaining);
 
+        // Update timeLeft from backend if available
+        if (status.remaining_time !== undefined) {
+          setTimeLeft(status.remaining_time);
+        }
+
         if (status.status === 'verified') {
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -192,12 +204,18 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
           } else {
             window.location.href = '/dashboard';
           }
-        } else if (['failed', 'expired'].includes(status.status)) {
+        } else if (status.status === 'failed') {
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
           }
           setStatus('error');
-          setError('Authentication failed or expired');
+          setError('Session invalidated due to incorrect attempt. Please restart authentication from the beginning.');
+        } else if (status.status === 'expired') {
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+          }
+          setStatus('error');
+          setError('Session expired. Please restart authentication.');
         }
       } catch (error) {
         console.error('Polling error:', error);
@@ -289,10 +307,22 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
                           <Loader2 className="w-4 h-4 animate-spin" />
                           <span className="text-sm font-semibold">Waiting for your confirmation</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-500">
+                        <div className="flex items-center gap-2 text-gray-600">
                           <Clock className="w-4 h-4" />
-                          <span className="text-sm font-medium"> {attemptsRemaining !== null && ` ${attemptsRemaining} attempts remaining`}</span>
+                          <span className="text-sm font-medium">
+                            Time remaining: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                          </span>
                         </div>
+                        {timeLeft < 30 && (
+                          <div className="text-xs text-red-600 font-semibold">
+                            ⚠️ Please confirm soon to avoid timeout
+                          </div>
+                        )}
+                        {attemptsRemaining !== null && (
+                          <div className="flex items-center gap-2 text-gray-500">
+                            <span className="text-sm font-medium">{attemptsRemaining} attempt remaining</span>
+                          </div>
+                        )}
                       </div>
                   </div>
 
