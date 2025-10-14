@@ -39,8 +39,6 @@ export interface DigitalPassSession {
   status: 'pending' | 'verified' | 'failed' | 'expired';
   attemptsRemaining: number;
   expiresAt: string;
-  remaining_time?: number;  // Effective remaining time in seconds
-  inactivity_remaining?: number;  // Inactivity timeout remaining in seconds
 }
 
 import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
@@ -55,8 +53,6 @@ export interface SSEEvent {
   status?: string;
   attemptsRemaining?: number;
   expiresAt?: string;
-  remaining_time?: number;  // Effective remaining time in seconds
-  inactivity_remaining?: number;  // Inactivity timeout remaining in seconds
   redirect_uri?: string;
   code?: string;
   state?: string;
