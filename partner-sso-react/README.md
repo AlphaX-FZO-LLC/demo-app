@@ -11,7 +11,7 @@ This demo application showcases secure OAuth2 integration with UG Pass identity 
 | -------------------- | ----------------------------------------------------------------------------- |
 | **Framework**        | [Next.js v15.3.0](https://nextjs.org/)                                        |
 | **Language**         | TypeScript                                                                    |
-| **Styling**          | Tailwind CSS + Open State Stack DS                                            |
+| **Styling**          | Tailwind CSS + AlphaX DS                                            |
 | **State Management** | [Zustand](https://zustand-demo.pmnd.rs/) – Minimal, scalable state management |
 | **Tooling**          | ESLint, Prettier, TypeScript, Docker                                          |
 | **i18n**             | TypeScript-ready internationalization with locale detection                   |

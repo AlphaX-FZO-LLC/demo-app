@@ -1,16 +1,16 @@
 {
-  "Open State Stack": "Open State Stack",
+  "AlphaX": "AlphaX",
   "Features": "Χαρακτηριστικά",
   "Documentation": "Τεκμηρίωση",
   "GitHub": "GitHub",
   "Toggle theme": "Εναλλαγή θέματος",
   "English": "Ελληνικά",
-  "New Release Open State Stack v1.0 is now available": "Η νέα έκδοση Open State Stack v1.0 είναι πλέον διαθέσιμη",
-  "Open State Stack Starter Next.js": "Open State Stack Starter Next.js",
+  "New Release AlphaX v1.0 is now available": "Η νέα έκδοση AlphaX v1.0 είναι πλέον διαθέσιμη",
+  "AlphaX Starter Next.js": "AlphaX Starter Next.js",
   "Build beautiful, responsive web applications with our modern Next.js starter kit. Packed with features to accelerate your development workflow.": "Δημιουργήστε όμορφες, ανταποκρινόμενες διαδικτυακές εφαρμογές με το σύγχρονο πακέτο εκκίνησης Next.js μας. Γεμάτο με χαρακτηριστικά για να επιταχύνετε τη ροή εργασίας ανάπτυξης.",
   "Star on GitHub": "Αστέρι στο GitHub",
   "Over 1,000+ stars on GitHub": "Πάνω από 1.000 αστέρια στο GitHub",
-  "Open State Stack comes with everything you need to build modern web applications.": "Το Open State Stack περιλαμβάνει όλα όσα χρειάζεστε για να δημιουργήσετε σύγχρονες διαδικτυακές εφαρμογές.",
+  "AlphaX comes with everything you need to build modern web applications.": "Το AlphaX περιλαμβάνει όλα όσα χρειάζεστε για να δημιουργήσετε σύγχρονες διαδικτυακές εφαρμογές.",
   "Next.js 14": "Next.js 14",
   "Built on the latest version of Next.js with App Router support.": "Χτισμένο στην τελευταία έκδοση του Next.js με υποστήριξη App Router.",
   "TypeScript": "TypeScript",
@@ -24,7 +24,7 @@
   "Dark Mode": "Σκοτεινή λειτουργία",
   "Built-in dark mode support with easy toggling.": "Ενσωματωμένη υποστήριξη σκοτεινής λειτουργίας με εύκολη εναλλαγή.",
   "Ready to contribute?": "Έτοιμοι να συνεισφέρετε;",
-  "Join thousands of developers building with Open State Stack.": "Ενώστε χιλιάδες προγραμματιστές που δημιουργούν με το Open State Stack.",
+  "Join thousands of developers building with AlphaX.": "Ενώστε χιλιάδες προγραμματιστές που δημιουργούν με το AlphaX.",
   "Get Started": "Ξεκινήστε",
-  "© 2025 Open State Stack. All rights reserved.": "© 2025 Open State Stack. Όλα τα δικαιώματα διατηρούνται."
+  "© 2025 AlphaX. All rights reserved.": "© 2025 AlphaX. Όλα τα δικαιώματα διατηρούνται."
 }

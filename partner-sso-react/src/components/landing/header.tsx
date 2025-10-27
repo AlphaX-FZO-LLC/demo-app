@@ -11,7 +11,7 @@ export function Header() {
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0  max-w-[1400px] mx-auto">
         <div className="flex gap-6 md:gap-10">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="inline-block font-bold">Open State Stack</span>
+            <span className="inline-block font-bold">AlphaX</span>
           </Link>
           <nav className="hidden gap-6 md:flex">
             {navItems.map((item) => (

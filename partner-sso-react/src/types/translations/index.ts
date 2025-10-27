@@ -1,17 +1,17 @@
 export interface TranslationsTypes {
   landing: {
-  "Open State Stack": "Open State Stack",
+  "AlphaX": "AlphaX",
   "Features": "Features",
   "Documentation": "Documentation",
   "GitHub": "GitHub",
   "Toggle theme": "Toggle theme",
   "English": "English",
-  "New Release Open State Stack v1.0 is now available": "New Release Open State Stack v1.0 is now available",
-  "Open State Stack Starter Next.js": "Open State Stack Starter Next.js",
+  "New Release AlphaX v1.0 is now available": "New Release AlphaX v1.0 is now available",
+  "AlphaX Starter Next.js": "AlphaX Starter Next.js",
   "Build beautiful, responsive web applications with our modern Next.js starter kit. Packed with features to accelerate your development workflow.": "Build beautiful, responsive web applications with our modern Next.js starter kit. Packed with features to accelerate your development workflow.",
   "Star on GitHub": "Star on GitHub",
   "Over 1,000+ stars on GitHub": "Over 1,000+ stars on GitHub",
-  "Open State Stack comes with everything you need to build modern web applications.": "Open State Stack comes with everything you need to build modern web applications.",
+  "AlphaX comes with everything you need to build modern web applications.": "AlphaX comes with everything you need to build modern web applications.",
   "Next.js 14": "Next.js 14",
   "Built on the latest version of Next.js with App Router support.": "Built on the latest version of Next.js with App Router support.",
   "TypeScript": "TypeScript",
@@ -25,9 +25,9 @@ export interface TranslationsTypes {
   "Dark Mode": "Dark Mode",
   "Built-in dark mode support with easy toggling.": "Built-in dark mode support with easy toggling.",
   "Ready to contribute?": "Ready to contribute?",
-  "Join thousands of developers building with Open State Stack.": "Join thousands of developers building with Open State Stack.",
+  "Join thousands of developers building with AlphaX.": "Join thousands of developers building with AlphaX.",
   "Get Started": "Get Started",
-  "© 2025 Open State Stack. All rights reserved.": "© 2025 Open State Stack. All rights reserved."
+  "© 2025 AlphaX. All rights reserved.": "© 2025 AlphaX. All rights reserved."
 };
 }
 
