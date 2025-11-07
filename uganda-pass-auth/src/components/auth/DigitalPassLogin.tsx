@@ -2,40 +2,34 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { digitalPassAuth } from '@/lib/auth/digitalpass';
-import { handleAuthSuccess, LoginContext } from '@/lib/auth/oauth';
+import { detectLoginContext, handleAuthSuccess } from '@/lib/auth/oauth';
 import { SSEEvent } from '@/lib/auth/types';
 import ErrorAlert from '@/components/ui/ErrorAlert';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Card, CardContent } from '../ui/card';
+import LoadingSpinner from '@/components/ui/loadingSpinner';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import {
-  CheckCircle,
   Clock,
-  Fingerprint,
+  Hourglass,
   Loader2,
-  Phone,
-  X,
 } from 'lucide-react';
 import { Input } from '../ui/input';
-import Link from 'next/link';
 import { Button } from '../ui/button';
-import { Checkbox } from '@radix-ui/react-checkbox';
-import { Label } from '@radix-ui/react-label';
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
-interface Props {
-  context: LoginContext;
-  onBack?: () => void;
-}
 
-export default function DigitalPassLogin({ context, onBack }: Props) {
+export default function DigitalPassLogin() {
+  const searchParams = useSearchParams();
+  const context = detectLoginContext(searchParams);
   const [identifier, setIdentifier] = useState('');
-  const [identifierType, setIdentifierType] = useState<'phoneNumber' | 'nationalId'>(
+  const [identifierType] = useState<'phoneNumber' | 'nationalId'>(
     'phoneNumber'
   );
   const [timeLeft, setTimeLeft] = useState(360) // 2 minutes
-  const [isValidPhone, setIsValidPhone] = useState(true);
+  const [isValidPhone] = useState(true);
   const [challengeNumber, setChallengeNumber] = useState<number | null>(null);
   const [accessToken, setAccessToken] = useState('');
-  const [status, setStatus] = useState<'form' | 'challenge' | 'success' | 'error'>('form');
+  const [status, setStatus] = useState<'form' | 'challenge' | 'success' | 'error'>('challenge');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
@@ -57,10 +51,6 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
       clearInterval(timer)
     }
   }, [timeLeft])
-
-  const getProgressPercentage = () => {
-    return ((120 - timeLeft) / 120) * 100
-  }
 
   useEffect(() => {
     return () => {
@@ -176,6 +166,19 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
     }
   };
 
+  const handleBackToForm = () => {
+    setStatus('form');
+    setError('');
+    setChallengeNumber(null);
+    setAccessToken('');
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+  };
+
   const startPolling = (accessToken: string, isSSO: boolean) => {
     pollingIntervalRef.current = setInterval(async () => {
       try {
@@ -212,125 +215,67 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
 
   if (status === 'challenge') {
     return (
-      <div className="bg-gray-50 flex flex-col rounded-lg">
-        <div className="h-1 bg-gradient-to-r from-black via-yellow-400 to-red-600"></div>
-        <header className="bg-white border-b border-gray-200 px-4 py-4">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-md">
-                <Fingerprint className="w-6 h-6 text-black" />
-                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-600 rounded-full border border-white"></div>
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">Approve Login Request</h1>
-                {attemptsRemaining !== null && ` (${attemptsRemaining} attempts remaining)`}
-              </div>
+  <section className="min-h-screen bg-[#0C2B25] flex items-center justify-center p-4">
+    <div className="container max-w-6xl mx-auto w-full space-y-6">
+      <Card className="h-auto !border-0 !pb-8  !rounded-4xl" style={{ backgroundImage: 'url(/background-login.svg)' }}>
+        <CardHeader className="border-b flex justify-between items-center">
+          <div className='flex gap-2 items-center'>
+                        <Image
+                src="/app-icon.svg"
+                alt="App Icon"
+                width={42}
+                height={42}
+              />
+            <div>
+          <CardTitle>X Pass</CardTitle>
+          <CardDescription>Secure Auth System</CardDescription>
             </div>
-            <Button
+          </div>
+          <Button
               variant="ghost"
-              onClick={onBack}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold"
+              onClick={handleBackToForm}
+              className="text-red-600 w-[160px] !cursor-pointer !h-10 hover:text-red-700 border-red-700 border font-semibold rounded-full"
             >
-              Cancel Request <X className="w-4 h-4 ml-1" />
+              Cancel 
             </Button>
+
+        </CardHeader>
+
+        <CardContent className="flex flex-col lg:flex-row justify-between h-full px-8 !pb-0">
+          {/* LEFT SIDE */}
+          <div className="w-full lg:w-3/4 pb-16">
+                     <h1 className='text-[#333] mb-4 text-xl md:text-2xl font-semibold not-italic leading-normal tracking-normal'>
+         Open your X Pass app &
+select the number shown and confirm to login.
+          </h1>
+          <p className='mb-6 md:mb-10 text-black/50 text-sm md:text-base'>
+       Login request from
+          </p>
+          <div className="w-full">
+           {challengeNumber}
+           <div className='flex gap-4'>
+     <p className='text-[#D65D2F] flex gap-2 items-center'><Hourglass className='w-4 h-4' /> Waiting for your confirmation</p>
+     <p className='text-black flex gap-2 items-center'><Clock className='w-4 h-4' /> Time Remaining : </p>
+           </div>
+      
           </div>
-        </header>
-
-        <main className="flex-1 flex items-center py-8 justify-center px-4 ">
-          <div className="w-full max-w-4xl mx-auto">
-            <Card className="shadow-lg flex">
-              <CardContent className="p-8">
-                {/* Challenge content */}
-                <div className="grid md:grid-cols-2 gap-8 items-center">
-                  {/* Left Section */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-4 mb-6 p-4 bg-gradient-to-r from-yellow-50 to-red-50 rounded-lg border border-yellow-200">
-                      <div className="relative w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-                        <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent rounded-full"></div>
-                        <Fingerprint className="w-8 h-8 text-black relative z-10" />
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border-2 border-white"></div>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 font-medium">Secure Digital Identity</p>
-                        <p className="text-xs text-gray-500">Digital • Secure</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-700 mb-1">Login request from</h3>
-                        <p className="text-lg font-bold text-gray-900">Ministry of Internal Affairs</p>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-gray-50 to-yellow-50 rounded-lg p-6 border border-yellow-200">
-                        <p className="text-lg text-gray-800 mb-4 text-balance font-medium">
-                          Open your Pass app, select the number shown and confirm to login
-                        </p>
-
-                        <div className="flex items-center justify-center mb-4">
-                          <div className="relative bg-white rounded-lg border-4 border-yellow-400 px-8 py-6 shadow-lg">
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-black via-yellow-400 to-red-600 rounded-t"></div>
-                            <span className="text-6xl font-bold text-gray-900 font-mono">
-                              {challengeNumber}
-                            </span>
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 via-yellow-400 to-black rounded-b"></div>
-                          </div>
-                        </div>
-
-                        <div className="mb-4">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-gradient-to-r from-yellow-400 to-red-500 h-2 rounded-full transition-all duration-1000"   style={{ width: `${getProgressPercentage()}%` }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-orange-600">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span className="text-sm font-semibold">Waiting for your confirmation</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <Clock className="w-4 h-4" />
-                          <span className="text-sm font-medium"> {attemptsRemaining !== null && ` ${attemptsRemaining} attempts remaining`}</span>
-                        </div>
-                      </div>
-                  </div>
-
-                  {/* Right Section (Mock Phone) */}
-                  <div className="flex justify-center">
-                    <div className="relative">
-                      <div className="w-64 h-80 bg-gradient-to-b from-gray-200 to-gray-300 rounded-3xl border-8 border-gray-400 flex items-center justify-center relative overflow-hidden shadow-xl">
-                        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-gray-500 rounded-full"></div>
-                        <div className="w-full h-full bg-gradient-to-b from-gray-100 to-gray-200 flex flex-col items-center justify-center p-6">
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-black via-yellow-400 to-red-600"></div>
-                          <div className="relative w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-lg bg-gradient-to-br from-yellow-400 to-yellow-500">
-                            <Fingerprint className="w-8 h-8 text-black" />
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 rounded-full border border-white"></div>
-                          </div>
-                          <p className="text-xs text-gray-600 text-center mb-4 font-bold">Pass</p>
-                          <div className="w-full space-y-2">
-                            <div className="h-2 bg-gray-300 rounded"></div>
-                            <div className="h-2 bg-gray-300 rounded w-3/4"></div>
-                            <div className="h-2 bg-gray-300 rounded w-1/2"></div>
-                          </div>
-                          <div className="mt-6 w-12 h-12 rounded-full flex items-center justify-center shadow-md bg-yellow-500">
-                            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                              <CheckCircle className="w-3 h-3 text-green-500" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg bg-red-600 animate-pulse">
-                        <div className="w-4 h-4 bg-white rounded-full"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
-        </main>
-      </div>
+          {/* RIGHT SIDE */}
+          <div className="w-full flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-sm md:max-w-lg h-auto">
+              <Image
+                src="/right-single-phone.svg"
+                alt="Phone"
+                width={600}
+                height={600}
+                className="w-full h-[378px] object-contain"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </section>
     );
   }
 
@@ -348,26 +293,73 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
   }
 
   return (
-    <>
-     <div className="w-full max-w-md mx-auto">
-      <div className="h-2 bg-gradient-to-r from-black via-yellow-400 to-red-600 rounded-t-lg"></div>
-      <Card className="shadow-lg rounded-t-none">
-        <CardContent className="px-8">
-          <div className="text-center mb-8">
-            <div className="relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full mb-4 shadow-lg">
-              <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent rounded-full"></div>
-              <Fingerprint className="w-10 h-10 text-black relative z-10" />
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-600 rounded-full border-2 border-white"></div>
+
+  <section className="min-h-screen bg-[#0C2B25] flex items-center justify-center p-4">
+    <div className="container max-w-6xl mx-auto w-full space-y-6">
+      <Card className="h-auto !border-0 !pb-0  !rounded-4xl" style={{ backgroundImage: 'url(/background-login.svg)' }}>
+        <CardHeader className="border-b flex gap-2 items-center">
+            <Image
+                src="/app-icon.svg"
+                alt="App Icon"
+                width={42}
+                height={42}
+              />
+            <div>
+          <CardTitle>X Pass</CardTitle>
+          <CardDescription>Secure Auth System</CardDescription>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Login to Pass</h1>
-            <p className="text-sm text-gray-600 font-medium">Digital Identity System</p>
-              {context.type === 'oauth2' && (
-          <p className="text-sm text-blue-600 mt-2">
-            Logging in to: <strong>Ministry of Internal Affairs</strong>
+        </CardHeader>
+
+        <CardContent className="flex flex-col lg:flex-row justify-between h-full px-8 !pb-0">
+          {/* LEFT SIDE */}
+          <div className="w-full lg:w-3/4 pb-16">
+                     <h1 className='text-[#333] mb-4 text-xl md:text-2xl font-semibold not-italic leading-normal tracking-normal'>
+            Login to your account
+          </h1>
+          <p className='mb-6 md:mb-10 text-black/50 text-sm md:text-base'>
+            To proceed, please tap the button below to securely access your X Pass.
+            Your privacy and security are our top priorities.
           </p>
-        )}
-            <p className="text-xs text-gray-500 mt-1">Digital • Secure • Trusted</p>
+          <div className="w-full ">
+            <div className='relative'>
+           <Input
+              value={identifier}
+              required
+              disabled={loading}
+              type="text"
+              placeholder="Enter registered mobile number"
+              onChange={(e) => setIdentifier(e.target.value)}
+              className={`!h-[72px] !pl-6 text-lg !bg-gray-100 !rounded-full !shadow-none !border-0 mb-4 transition-colors ${
+                !isValidPhone && identifier.length > 0
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                  : "focus:border-yellow-400 focus:ring-yellow-400"
+              }`}
+              autoComplete="tel"
+              inputMode="numeric"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleSubmit}
+              disabled={!identifier.trim() || !isValidPhone || loading}
+              className="!max-w-[160px] disabled:cursor-not-allowed absolute right-2 bottom-2 !h-14 !w-[160px]  !bg-yellow-600 dark:bg-gray-700 cursor-pointer text-white dark:text-gray-200 rounded-full font-normal"
+            >       
+            {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                <>
+                 Proceed
+                </>
+              )}
+            </Button>
+                </div>
           </div>
+                 {!isValidPhone && identifier.length > 0 && (
+                <p className="text-sm text-red-600 text-center mt-2">Please enter a valid Uganda phone number</p>
+              )}
 
       {error && (
         <ErrorAlert 
@@ -375,98 +367,61 @@ export default function DigitalPassLogin({ context, onBack }: Props) {
           onDismiss={() => setError('')}
         />
       )}
-
-          <div className="space-y-6">
-            <div className="space-y-4">
-                <Label  htmlFor="identifier" className="font-medium text-gray-700">
-                  🇺🇬 Phone Number or National ID
-                </Label>
-              <div className="relative mt-2">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <Input
-              
-            value={identifier}
-            required
-            disabled={loading}
-                  type="text"
-                  placeholder="e.g., +256700000000 or NIN123456789"
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  className={`h-12 pl-10 text-center text-lg border-2 transition-colors ${
-                    !isValidPhone && identifier.length > 0
-                      ? "border-red-400 focus:border-red-500 focus:ring-red-500"
-                      : "focus:border-yellow-400 focus:ring-yellow-400"
-                  }`}
-                  autoComplete="tel"
-                  inputMode="numeric"
-         
-                />
-              </div>
-              {!isValidPhone && identifier.length > 0 && (
-                <p className="text-sm text-red-600 text-center">Please enter a valid Uganda phone number</p>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                className="border rounded-sm w-4 h-4 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+          <p className='mt-4 md:mt-6 text-sm md:text-base'>
+            Don’t have an account? <span className='text-yellow-600 border-b border-yellow-600'>Sign Up Now</span>
+          </p>
+          <p className='mt-8 border-b md:mt-20 inline-block border-black text-sm md:text-base'>
+            How to use X Pass app to login?
+          </p>
+          <div className='flex flex-row gap-4 mt-6'>
+              <Image
+                src="/google-play.svg"
+                alt="Google Play"
+                width={138}
+                height={54}
               />
-              <label htmlFor="remember" className="text-sm text-gray-700 cursor-pointer font-medium">
-                Remember me
-              </label>
-            </div>
-
-            <Button
-              onClick={handleSubmit}
-              className="w-full  rounded-full h-12 bg-gradient-to-r from-red-600 via-red-700 to-red-800 hover:from-red-700 hover:via-red-800 hover:to-red-900 text-white font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!identifier.trim() || !isValidPhone || loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Authenticating...
-                </>
-              ) : (
-                <>
-               <span>📱</span>
-                Login with Digital Pass
-                </>
-              )}
-            </Button>
-
-                  {onBack && (
-        <div className="text-center">
-          <button
-            onClick={onBack}
-            className="text-gray-500 hover:text-gray-700 text-sm !cursor-pointer"
-            disabled={loading}
-          >
-            ← Choose Different Method
-          </button>
-        </div>
-      )}
-
-            <div className="text-center space-y-3">
-              <p className="text-sm text-gray-600">
-                Dont have Pass account?{" "}
-                <Link href="/register" className="text-red-600 hover:text-red-700 font-semibold">
-                  Create new account
-                </Link>
-              </p>
-              <Link href="/recover" className="text-red-600 hover:text-red-700 text-sm font-semibold block">
-                Recover your account
-              </Link>
+             <Image
+                src="/app-store.svg"
+                alt="App Store"
+                width={138}
+                height={54}
+              />
+          </div>
+          </div>
+          {/* RIGHT SIDE */}
+          <div className="w-full flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-sm md:max-w-2xl h-auto">
+              <Image
+                src="/phone-image.svg"
+                alt="Phone"
+                width={643}
+                height={620}
+                className="w-full h-auto object-contain"
+              />
             </div>
           </div>
         </CardContent>
       </Card>
-
-      <div className="text-center mt-4">
-        <p className="text-xs text-gray-500 italic">&quot;Pass 2025&quot;</p>
-      </div>
     </div>
-       </>
+  </section>
+
   );
 }
+
+
+
+
+
+
+
+           
+{/*       
+                              {challengeNumber}
+                            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold"
+            >
+              Cancel Request <X className="w-4 h-4 ml-1" />
+            </Button>
+          <span className="text-sm font-medium"> {attemptsRemaining !== null && ` ${attemptsRemaining} attempts remaining`}</span> */}

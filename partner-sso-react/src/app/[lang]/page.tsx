@@ -1,43 +1,28 @@
 'use client'
-
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Smartphone, CheckCircle, XCircle, Info } from 'lucide-react'
 import { CONFIG } from '@/lib/config'
-import { UGAuthLogo } from '@/assets/icons'
 import { generatePKCEChallenge, storePKCEVerifier, retrievePKCEVerifier, clearPKCEVerifier } from '@/lib/pkce'
-
-interface StatusMessage {
-  message: string
-  type: 'info' | 'success' | 'error'
-}
+import Image from 'next/image'
 
 export default function LoginPage() {
-  const [status, setStatus] = useState<StatusMessage | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const code = searchParams?.get('code')
     const state = searchParams?.get('state')
-    const error = searchParams?.get('error')
-
-    if (error) {
-      setStatus({ message: `Authentication failed: ${error}`, type: 'error' })
-      return
-    }
 
     if (code && state) {
       const storedState = sessionStorage.getItem('oauth_state')
       if (state !== storedState) {
-        setStatus({ message: 'Invalid state parameter - possible CSRF attack', type: 'error' })
+        console.log({ message: 'Invalid state parameter - possible CSRF attack', type: 'error' })
         return
       }
 
-      setStatus({ message: 'Authentication successful! Exchanging code for tokens...', type: 'success' })
+      console.log({ message: 'Authentication successful! Exchanging code for tokens...', type: 'success' })
       exchangeCodeForTokens(code)
     }
   }, [searchParams])
@@ -52,11 +37,11 @@ export default function LoginPage() {
     sessionStorage.setItem('oauth_state', state)
     sessionStorage.setItem('auth_method', 'digital_pass')
     
-    setStatus({ message: 'Preparing secure authentication...', type: 'info' })
+    console.log({ message: 'Preparing secure authentication...', type: 'info' })
     
     const authUrl = new URL(`${CONFIG.AUTH_SERVER_URL}/auth/authorize`)
     if (!CONFIG.CLIENT_ID || !CONFIG.CALLBACK_URL || !CONFIG.SCOPES) {
-      setStatus({ message: 'Missing OAuth configuration. Please check environment variables.', type: 'error' })
+      console.log({ message: 'Missing OAuth configuration. Please check environment variables.', type: 'error' })
       return
     }
     
@@ -80,14 +65,14 @@ export default function LoginPage() {
         authUrl.searchParams.append('code_challenge', pkceParams.codeChallenge)
         authUrl.searchParams.append('code_challenge_method', pkceParams.codeChallengeMethod)
         
-        setStatus({ message: 'Redirecting to Digital Pass authentication (PKCE-secured)...', type: 'info' })
+        console.log({ message: 'Redirecting to Digital Pass authentication (PKCE-secured)...', type: 'info' })
       } catch (error) {
         console.error('PKCE generation failed:', error)
-        setStatus({ message: 'Failed to generate PKCE parameters. Please try again.', type: 'error' })
+        console.log({ message: 'Failed to generate PKCE parameters. Please try again.', type: 'error' })
         return
       }
     } else {
-      setStatus({ message: 'Redirecting to Digital Pass authentication...', type: 'info' })
+      console.log({ message: 'Redirecting to Digital Pass authentication...', type: 'info' })
     }
     
     setTimeout(() => {
@@ -139,70 +124,91 @@ export default function LoginPage() {
         sessionStorage.setItem('refresh_token', tokens.refresh_token)
       }
 
-      setStatus({ message: 'Tokens received successfully! Redirecting to dashboard...', type: 'success' })
-      
+      console.log({ message: 'Tokens received successfully! Redirecting to dashboard...', type: 'success' })
+
       setTimeout(() => {
         router.push('/en/dashboard')
       }, 2000)
 
     } catch (error: any) {
       console.error('Token exchange error:', error)
-      setStatus({ message: `Token exchange failed: ${error.message}`, type: 'error' })
-    }
-  }
-
-  const StatusIcon = ({ type }: { type: 'info' | 'success' | 'error' }) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle className="h-4 w-4" />
-      case 'error':
-        return <XCircle className="h-4 w-4" />
-      default:
-        return <Info className="h-4 w-4" />
+      console.log({ message: `Token exchange failed: ${error.message}`, type: 'error' })
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl font-bold text-primary-foreground">P</span>
+  <section className="min-h-screen bg-[#0C2B25] flex items-center justify-center p-4">
+    <div className="container max-w-6xl mx-auto w-full space-y-6">
+      <Card className="h-auto !border-0 !pb-0  !rounded-4xl" style={{ backgroundImage: 'url(/background-login.svg)' }}>
+        <CardHeader className="border-b flex gap-2 items-center">
+            <Image
+                src="/app-icon.svg"
+                alt="App Icon"
+                width={42}
+                height={42}
+              />
+            <div>
+          <CardTitle>X Pass</CardTitle>
+          <CardDescription>Secure Auth System</CardDescription>
+            </div>
+        </CardHeader>
+
+        <CardContent className="flex flex-col lg:flex-row justify-between h-full px-8 !pb-0">
+          {/* LEFT SIDE */}
+          <div className="w-full lg:w-3/4 pb-16">
+                     <h1 className='text-[#333] mb-4 text-xl md:text-2xl font-semibold not-italic leading-normal tracking-normal'>
+            Login to your account
+          </h1>
+          <p className='mb-6 md:mb-10 text-black/50 text-sm md:text-base'>
+            To proceed, please tap the button below to securely access your X Pass.
+            Your privacy and security are our top priorities.
+          </p>
+               <div className="w-full">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={loginWithDigitalPass}
+              className="w-full sm:w-[240px] !h-10 !bg-yellow-600 dark:bg-gray-700 cursor-pointer text-white dark:text-gray-200 rounded-full font-normal"
+            >
+              Sign in with X Pass
+            </Button>
           </div>
-          <h1 className="text-3xl font-bold text-white">Partner Demo Portal</h1>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Authentication</CardTitle>
-            <CardDescription>Choose your authentication method</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-
-
-        <Button
-            type="button"
-            variant="secondary"
-            onClick={loginWithDigitalPass}
-            className="w-full h-10 bg-gray-100 dark:bg-gray-700 !cursor-pointer text-gray-950 dark:text-gray-200 rounded-full font-normal"
-          >
-             <UGAuthLogo className='!h-6 !w-6' />
-            Login with Digital Pass
-          </Button>
-
-            {status && (
-              <div className={`flex items-center space-x-2 p-3 rounded-lg ${
-                status.type === 'success' ? 'bg-green-50 text-green-800' :
-                status.type === 'error' ? 'bg-red-50 text-red-800' :
-                'bg-blue-50 text-blue-800'
-              }`}>
-                <StatusIcon type={status.type} />
-                <span className="text-sm">{status.message}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          <p className='mt-4 md:mt-6 text-sm md:text-base'>
+            Don’t have an account? <span className='text-yellow-600 border-b border-yellow-600'>Sign Up Now</span>
+          </p>
+          <p className='mt-8 border-b md:mt-20 inline-block border-black text-sm md:text-base'>
+            How to use X Pass app to login?
+          </p>
+          <div className='flex flex-row gap-4 mt-6'>
+              <Image
+                src="/google-play.svg"
+                alt="Google Play"
+                width={138}
+                height={54}
+              />
+             <Image
+                src="/app-store.svg"
+                alt="App Store"
+                width={138}
+                height={54}
+              />
+          </div>
+          </div>
+          {/* RIGHT SIDE */}
+          <div className="w-full flex justify-center lg:justify-end">
+            <div className="relative w-full max-w-sm md:max-w-2xl h-auto">
+              <Image
+                src="/phone-image.svg"
+                alt="Phone"
+                width={643}
+                height={620}
+                className="w-full h-auto object-contain"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
+  </section>
   )
 }
