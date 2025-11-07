@@ -1,14 +1,14 @@
 'use client';
 
+import { Card } from '@/components/ui/card';
 import { LoginContext } from '@/lib/auth/types';
-import { Card } from '../ui/card';
 
 interface Props {
   onSelect: (method: 'webauthn' | 'digitalpass') => void;
   context: LoginContext;
 }
 
-export default function MethodSelector({ onSelect, context }: Props) {
+export default function MethodSelector({ onSelect }: Omit<Props, 'context'>) {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="h-2 bg-gradient-to-r from-black via-yellow-400 to-red-600 rounded-t-lg"></div>

@@ -18,14 +18,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-3xl">🇺🇬</span>
-        </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Pass</h1>
-        <p className="text-gray-600 mb-4">Loading...</p>
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent mx-auto" />
-      </div>
+     loading...
     </div>
   );
 }
