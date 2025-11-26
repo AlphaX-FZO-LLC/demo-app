@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { webauthnAuth } from '@/lib/auth/webauthn';
 import { handleAuthSuccess, LoginContext } from '@/lib/auth/oauth';
 import ErrorAlert from '@/components/ui/ErrorAlert';
-import LoadingSpinner from '@/components/ui/loadingSpinner';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface Props {
   context: LoginContext;

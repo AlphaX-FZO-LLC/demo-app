@@ -5,7 +5,6 @@ import { digitalPassAuth } from '@/lib/auth/digitalpass';
 import { detectLoginContext, handleAuthSuccess } from '@/lib/auth/oauth';
 import { SSEEvent } from '@/lib/auth/types';
 import ErrorAlert from '@/components/ui/ErrorAlert';
-import LoadingSpinner from '@/components/ui/loadingSpinner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import {
   Clock,
@@ -16,6 +15,7 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
+import { LoadingSvg } from '../loading';
 
 
 export default function DigitalPassLogin() {
@@ -25,11 +25,11 @@ export default function DigitalPassLogin() {
   const [identifierType] = useState<'phoneNumber' | 'nationalId'>(
     'phoneNumber'
   );
-  const [timeLeft, setTimeLeft] = useState(360) // 2 minutes
+  const [timeLeft, setTimeLeft] = useState(150) // 2:30 minutes
   const [isValidPhone] = useState(true);
   const [challengeNumber, setChallengeNumber] = useState<number | null>(null);
   const [accessToken, setAccessToken] = useState('');
-  const [status, setStatus] = useState<'form' | 'challenge' | 'success' | 'error'>('challenge');
+  const [status, setStatus] = useState<'form' | 'challenge' | 'success' | 'error'>('form');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
@@ -50,7 +50,7 @@ export default function DigitalPassLogin() {
     return () => {
       clearInterval(timer)
     }
-  }, [timeLeft])
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -228,7 +228,7 @@ export default function DigitalPassLogin() {
               />
             <div>
           <CardTitle>X Pass</CardTitle>
-          <CardDescription>Secure Auth System</CardDescription>
+          <CardDescription>Powered by NITAU • Secure Login</CardDescription>
             </div>
           </div>
           <Button
@@ -243,19 +243,44 @@ export default function DigitalPassLogin() {
 
         <CardContent className="flex flex-col lg:flex-row justify-between h-full px-8 !pb-0">
           {/* LEFT SIDE */}
-          <div className="w-full lg:w-3/4 pb-16">
-                     <h1 className='text-[#333] mb-4 text-xl md:text-2xl font-semibold not-italic leading-normal tracking-normal'>
-         Open your X Pass app &
-select the number shown and confirm to login.
+          <div className="w-full lg:w-3/4">
+                   <h1 className='text-[#333] mb-2 text-xl md:text-2xl font-semibold not-italic leading-normal tracking-normal'>
+            Sign in Securely with X Pass
           </h1>
           <p className='mb-6 md:mb-10 text-black/50 text-sm md:text-base'>
+          One login for all government services: <br /> fast, private, and protected.
+          </p>
+          <div className='mb-6 md:mb-10'>
+          <p className=' text-black/50 text-sm md:text-base'>
        Login request from
           </p>
+          <p className='text-red-600 font-medium text-lg'>
+            Ugov Portal: {new Date().toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'short', 
+              year: 'numeric' 
+            })} at {new Date().toLocaleTimeString('en-GB', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </p>
+          </div>
+
           <div className="w-full">
-           {challengeNumber}
-           <div className='flex gap-4'>
+            <div className='relative'>
+              <div>
+                <LoadingSvg />
+              </div>
+   
+               <p className='text-5xl mb-6 font-normal absolute top-12 left-10'>
+                 {challengeNumber}
+                </p>
+            </div>
+  
+   
+           <div className='flex gap-4 my-8'>
      <p className='text-[#D65D2F] flex gap-2 items-center'><Hourglass className='w-4 h-4' /> Waiting for your confirmation</p>
-     <p className='text-black flex gap-2 items-center'><Clock className='w-4 h-4' /> Time Remaining : </p>
+     <p className='text-black flex gap-2 items-center'><Clock className='w-4 h-4' /> Time Remaining : <span className='font-semibold'>{Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}</span></p>
            </div>
       
           </div>
@@ -278,27 +303,14 @@ select the number shown and confirm to login.
   </section>
     );
   }
-
-  if (status === 'success') {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6 text-center min-w-md">
-        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">✅</span>
-        </div>
-        <h2 className="text-xl font-bold text-black mb-2">Authentication Successful!</h2>
-        <p className="text-gray-600">Redirecting...</p>
-        <LoadingSpinner className="h-6 w-6 mx-auto mt-4" />
-      </div>
-    );
-  }
-
   return (
 
   <section className="min-h-screen bg-[#0C2B25] flex items-center justify-center p-4">
     <div className="container max-w-6xl mx-auto w-full space-y-6">
       <Card className="h-auto !border-0 !pb-0  !rounded-4xl" style={{ backgroundImage: 'url(/background-login.svg)' }}>
-        <CardHeader className="border-b flex gap-2 items-center">
-            <Image
+         <CardHeader className="border-b flex justify-between items-center">
+          <div className='flex gap-2 items-center'>
+                        <Image
                 src="/app-icon.svg"
                 alt="App Icon"
                 width={42}
@@ -306,19 +318,26 @@ select the number shown and confirm to login.
               />
             <div>
           <CardTitle>X Pass</CardTitle>
-          <CardDescription>Secure Auth System</CardDescription>
+          <CardDescription>Powered by NITAU • Secure Login</CardDescription>
             </div>
+          </div>
+          {/* <Button
+              variant="ghost"
+              onClick={handleBackToForm}
+              className="text-red-600 w-[160px] !cursor-pointer !h-10 hover:text-red-700 border-red-700 border font-semibold rounded-full"
+            >
+              Back 
+            </Button> */}
         </CardHeader>
 
         <CardContent className="flex flex-col lg:flex-row justify-between h-full px-8 !pb-0">
           {/* LEFT SIDE */}
-          <div className="w-full lg:w-3/4 pb-16">
-                     <h1 className='text-[#333] mb-4 text-xl md:text-2xl font-semibold not-italic leading-normal tracking-normal'>
-            Login to your account
+          <div className="w-full lg:w-3/4 ">
+                     <h1 className='text-[#333] mb-2 text-xl md:text-2xl font-semibold not-italic leading-normal tracking-normal'>
+            Sign in Securely with X Pass
           </h1>
           <p className='mb-6 md:mb-10 text-black/50 text-sm md:text-base'>
-            To proceed, please tap the button below to securely access your X Pass.
-            Your privacy and security are our top priorities.
+          One login for all government services: <br /> fast, private, and protected.
           </p>
           <div className="w-full ">
             <div className='relative'>
@@ -367,11 +386,14 @@ select the number shown and confirm to login.
           onDismiss={() => setError('')}
         />
       )}
-          <p className='mt-4 md:mt-6 text-sm md:text-base'>
-            Don’t have an account? <span className='text-yellow-600 border-b border-yellow-600'>Sign Up Now</span>
+      <div>
+         <p className='mt-4 border-b border-black inline-block md:mt-16 text-sm md:text-base'>
+           Learn how X Pass works
           </p>
-          <p className='mt-8 border-b md:mt-20 inline-block border-black text-sm md:text-base'>
-            How to use X Pass app to login?
+      </div>
+ 
+          <p className='mt-2 border-b md:mt-2 inline-block border-black text-sm md:text-base'>
+            Need help signing in? Get support
           </p>
           <div className='flex flex-row gap-4 mt-6'>
               <Image
@@ -414,14 +436,4 @@ select the number shown and confirm to login.
 
 
 
-           
-{/*       
-                              {challengeNumber}
-                            <Button
-              variant="ghost"
-              onClick={onBack}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 font-semibold"
-            >
-              Cancel Request <X className="w-4 h-4 ml-1" />
-            </Button>
-          <span className="text-sm font-medium"> {attemptsRemaining !== null && ` ${attemptsRemaining} attempts remaining`}</span> */}
+        
